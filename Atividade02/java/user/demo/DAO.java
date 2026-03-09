@@ -8,6 +8,8 @@ public class DAO {
 	protected Connection conexao;
 	
 	public DAO() {
+
+		// conexao
 		conexao = null;
 	}
 	
