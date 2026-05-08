@@ -7,7 +7,7 @@ public class Post {
     private int idprestador;
     private String titulo;
     private String legenda;
-    private String imagemUrl; // <<< ADICIONE ESTA LINHA
+    private String foto;
     private Timestamp dataenvio;
 
     public Post() {}
@@ -25,8 +25,8 @@ public class Post {
     public void setLegenda(String legenda) { this.legenda = legenda; }
 
     // <<< ADICIONE ESTES DOIS MÉTODOS >>>
-    public String getImagemUrl() { return imagemUrl; }
-    public void setImagemUrl(String imagemUrl) { this.imagemUrl = imagemUrl; }
+    public String getFoto() { return foto; }
+    public void setFoto(String foto) { this.foto = foto; }
 
     public Timestamp getDataenvio() { return dataenvio; }
     public void setDataenvio(Timestamp dataenvio) { this.dataenvio = dataenvio; }

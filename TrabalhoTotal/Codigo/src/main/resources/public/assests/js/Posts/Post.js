@@ -1,230 +1,244 @@
-// 1. Constantes e Dados Falsos (Mock) que estavam faltando
 const mockJSON = {
-    posts: [
-        {
-            imagemUrl: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-            titulo: "Troca de Fiação",
-            legenda: "Serviço completo de troca de fiação em residência antiga."
-        },
-        {
-            imagemUrl: "https://images.unsplash.com/photo-1581092921461-eab62e97a780?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-            titulo: "Instalação de Painel",
-            legenda: "Quadro de distribuição montado e organizado."
-        }
-    ]
+  posts: [
+    {
+      foto: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&q=80",
+      titulo: "Troca de Fiação",
+      legenda: "Serviço completo de troca de fiação em residência antiga."
+    },
+    {
+      foto: "https://images.unsplash.com/photo-1581092921461-eab62e97a780?w=800&q=80",
+      titulo: "Instalação de Painel",
+      legenda: "Quadro de distribuição montado e organizado."
+    }
+  ]
 };
 
-// ==========================================
-// FUNÇÕES DE CONVERSÃO DE IMAGEM BASE64
-// ==========================================
+let imagemSelecionada = null; 
+let tabAtiva = 'upload';
 
-/**
- * Converte uma imagem (file ou URL) para string base64
- * @param {File|string} imagem - Arquivo de imagem ou URL da imagem
- * @returns {Promise<string>} - Promise que retorna a string base64
- */
-async function imagemParaBase64(imagem) {
-    return new Promise((resolve, reject) => {
-        // Se for um arquivo (File object)
-        if (imagem instanceof File) {
-            const leitor = new FileReader();
-            leitor.onload = (evento) => {
-                resolve(evento.target.result); // Já vem em formato base64
-            };
-            leitor.onerror = (erro) => reject(erro);
-            leitor.readAsDataURL(imagem);
-        }
-        // Se for uma URL
-        else if (typeof imagem === 'string') {
-            fetch(imagem)
-                .then(resposta => resposta.blob())
-                .then(blob => {
-                    const leitor = new FileReader();
-                    leitor.onload = (evento) => {
-                        resolve(evento.target.result);
-                    };
-                    leitor.readAsDataURL(blob);
-                })
-                .catch(erro => reject(erro));
-        }
-        else {
-            reject(new Error("Tipo de imagem inválido"));
-        }
-    });
+// ==========================================
+// FUNÇÕES DE AUXÍLIO E CONVERSÃO
+// ==========================================
+function renderStars(rating) {
+  const container = document.getElementById('stars-display');
+  if (!container) return;
+  container.innerHTML = '';
+  for (let i = 1; i <= 5; i++) {
+    const star = document.createElement('i');
+    star.className = i <= Math.round(rating) ? 'fa-solid fa-star' : 'fa-regular fa-star';
+    container.appendChild(star);
+  }
 }
 
-/**
- * Converte uma string base64 de volta para imagem (retorna como data URL)
- * @param {string} base64String - String em formato base64
- * @returns {string} - URL de dados (data URL) que pode ser usada em <img src="">
- */
-function base64ParaImagem(base64String) {
-    // Se já for uma data URL, retorna como está
-    if (base64String.startsWith('data:')) {
-        return base64String;
-    }
-    // Se for apenas a string base64, adiciona o prefixo
-    return `data:image/jpeg;base64,${base64String}`;
-}
-
-// ==========================================
-// CONTROLES DE MENU E PERFIL
-// ==========================================
-function toggleMenu() {
-    const menu = document.getElementById('dropdown-menu');
-    menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
-}
-
-function toggleProfile() {
-    const profileSection = document.getElementById('profile-section');
-    const noProfileMsg = document.getElementById('no-profile');
+function processarArquivo(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  
+  const reader = new FileReader();
+  
+  reader.onload = (e) => {
+    // Pegamos o resultado original (com data:image/...)
+    let fullBase64 = e.target.result;
     
-    if (profileSection.style.display === 'none' || profileSection.style.display === '') {
-        profileSection.style.display = 'block';
-        noProfileMsg.style.display = 'none';
-    } else {
-        profileSection.style.display = 'none';
-        noProfileMsg.style.display = 'block';
-    }
+    // Aplicamos a limpeza que você enviou:
+    // 1. Remove "data:"
+    // 2. Remove tudo até a primeira vírgula (o cabeçalho do tipo de arquivo)
+    let base64Limpo = fullBase64.replace("data:", "").replace(/^.+,/, "");
+    
+    // imagemSelecionada agora terá apenas a string pura
+    imagemSelecionada = base64Limpo;
+    
+    // Para o PREVIEW funcionar no navegador, precisamos do Base64 COMPLETO.
+    // Então passamos o 'fullBase64' para o src da imagem.
+    document.getElementById('pm-preview-img').src = fullBase64;
+    document.getElementById('pm-preview-wrap').style.display = 'block';
+    document.getElementById('pm-drop-area').style.display = 'none';
+    
+    console.log("Base64 Limpo:", imagemSelecionada);
+  };
+  
+  reader.readAsDataURL(file);
 }
 
 // ==========================================
-// CONTROLES DO MODAL (CRIAR POST)
+// GESTÃO DO MODAL E PREVIEW
 // ==========================================
-const modalOverlay = document.getElementById('post-modal-overlay');
-const btnOpenModal = document.getElementById('open-post-modal-btn');
-const btnCloseModal = document.getElementById('close-post-modal');
-const btnCancelModal = document.getElementById('pm-cancel-btn');
+function switchTab(tab) {
+  tabAtiva = tab;
+  document.getElementById('panel-upload').style.display = tab === 'upload' ? 'block' : 'none';
+  document.getElementById('panel-url').style.display = tab === 'url' ? 'block' : 'none';
+  document.getElementById('tab-upload').classList.toggle('active', tab === 'upload');
+  document.getElementById('tab-url').classList.toggle('active', tab === 'url');
+  tab === 'upload' ? limparURL() : limparUpload();
+}
 
-btnOpenModal.addEventListener('click', () => modalOverlay.style.display = 'flex');
-btnCloseModal.addEventListener('click', () => modalOverlay.style.display = 'none');
-btnCancelModal.addEventListener('click', () => modalOverlay.style.display = 'none');
+function limparUpload() {
+  imagemSelecionada = null;
+  document.getElementById('pm-preview-img').src = '';
+  document.getElementById('pm-preview-wrap').style.display = 'none';
+  document.getElementById('pm-drop-area').style.display = 'flex';
+  document.getElementById('pm-file-input').value = '';
+}
 
-const inputImgUrl = document.getElementById('pm-img-url');
-const previewImg = document.getElementById('pm-preview-img');
-const placeholderImg = document.getElementById('pm-img-placeholder');
+function limparURL() {
+  imagemSelecionada = null;
+  document.getElementById('pm-img-url').value = '';
+  document.getElementById('pm-preview-img-url').src = '';
+  document.getElementById('pm-preview-wrap-url').style.display = 'none';
+}
 
-inputImgUrl.addEventListener('input', (e) => {
-    const url = e.target.value;
-    if (url.trim() !== '') {
-        previewImg.src = url;
-        previewImg.style.display = 'block';
-        placeholderImg.style.display = 'none';
-    } else {
-        previewImg.style.display = 'none';
-        placeholderImg.style.display = 'flex';
-    }
-});
+function processarArquivo(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    imagemSelecionada = e.target.result;
+    document.getElementById('pm-preview-img').src = imagemSelecionada;
+    document.getElementById('pm-preview-wrap').style.display = 'block';
+    document.getElementById('pm-drop-area').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function mostrarPreviewURL(url) {
+  imagemSelecionada = url;
+  const img = document.getElementById('pm-preview-img-url');
+  const wrap = document.getElementById('pm-preview-wrap-url');
+  img.src = url;
+  img.onload = () => { wrap.style.display = 'block'; };
+  img.onerror = () => {
+    wrap.style.display = 'none';
+    imagemSelecionada = null;
+  };
+}
 
 // ==========================================
-// COMUNICAÇÃO COM API E RENDERIZAÇÃO (JSON)
-// =========================================
-
-document.addEventListener('DOMContentLoaded', () => {
-    carregarPosts();
-    // 2. Chamei a função que evita o travamento da tela
-    carregarReviewsMock(); 
-});
-
+// CARREGAR E PUBLICAR (CAMPO 'FOTO')
+// ==========================================
 async function carregarPosts() {
-    const postsList = document.getElementById('portfolio-posts-list');
-    const galleryGrid = document.getElementById('portfolio-grid');
-    
-    postsList.innerHTML = '<p>Carregando portfólio...</p>';
+  const postsList = document.getElementById('portfolio-posts-list');
+  const galleryGrid = document.getElementById('portfolio-grid');
+  
+  let posts = [];
+  try {
+    const resposta = await fetch(`${API_BASE_URL}/posts`);
+    posts = resposta.ok ? await resposta.json() : mockJSON.posts;
+  } catch (e) {
+    posts = mockJSON.posts;
+  }
 
-    try {
-        let posts = [];
-        try {
-            const resposta = await fetch(`${API_BASE_URL}/posts`);
-            if(resposta.ok) posts = await resposta.json();
-            else throw new Error("API não retornou OK");
-        } catch (e) {
-            console.warn("Servidor Java indisponível ou rota inválida. Carregando dados falsos (Mock).");
-            posts = mockJSON.posts;
-        }
+  postsList.innerHTML = '';
+  galleryGrid.innerHTML = '';
 
-        postsList.innerHTML = '';
-        galleryGrid.innerHTML = '';
-
-        if (posts.length === 0) {
-            postsList.innerHTML = '<p>Nenhum trabalho publicado ainda.</p>';
-            return;
-        }
-
-        posts.forEach(post => {
-            // Converter base64 de volta para imagem se necessário
-            let imagemUrl = post.imagemUrl;
-            if (imagemUrl && !imagemUrl.startsWith('http')) {
-                imagemUrl = base64ParaImagem(imagemUrl);
-            }
-
-            postsList.innerHTML += `
-                <div class="post-item">
-                    ${imagemUrl ? `<img src="${imagemUrl}" alt="Trabalho" class="post-img">` : ''}
-                    <div class="post-content">
-                        <h4>${post.titulo || 'Serviço Realizado'}</h4>
-                        <p>${post.legenda}</p>
-                    </div>
-                </div>
-            `;
-
-            if (imagemUrl) {
-                galleryGrid.innerHTML += `<img src="${imagemUrl}" class="gallery-img" alt="Galeria">`;
-            }
-        });
-
-    } catch (erro) {
-        postsList.innerHTML = '<p style="color:red;">Erro ao carregar os posts.</p>';
-        console.error(erro);
+  posts.forEach(post => {
+    // Usando .foto conforme seu banco de dados
+    const imgHtml = post.foto ? `<img src="${post.foto}" class="post-img">` : '';
+    postsList.innerHTML += `
+      <div class="post-item">
+        ${imgHtml}
+        <div class="post-content">
+          <h4>${post.titulo || 'Serviço'}</h4>
+          <p>${post.legenda || ''}</p>
+        </div>
+      </div>`;
+    if (post.foto) {
+      galleryGrid.innerHTML += `<img src="${post.foto}" class="gallery-img">`;
     }
+  });
 }
 
 document.getElementById('pm-publish-btn').addEventListener('click', async () => {
-    const desc = document.getElementById('pm-desc').value;
-    const imgUrl = document.getElementById('pm-img-url').value;
-    const tagClient = document.getElementById('pm-client-tag').value;
+  const titulo = document.getElementById('pm-titulo').value.trim();
+  const desc = document.getElementById('pm-desc').value.trim();
+  const tagClient = document.getElementById('pm-client-tag').value.trim();
 
-    if (!desc) { alert("A descrição é obrigatória!"); return; }
+  if (!desc) return alert('A descrição é obrigatória!');
 
-    try {
-        // Converter imagem para base64
-        let imagemBase64 = null;
-        if (imgUrl.trim() !== '') {
-            imagemBase64 = await imagemParaBase64(imgUrl);
-        }
+  let imagemFinal = "";
 
-        const novoPost = {
-            idprestador: 1, 
-            titulo: tagClient ? `Atendimento para @${tagClient}` : 'Novo Serviço',
-            legenda: desc,
-            imagemUrl: imagemBase64 // Agora enviando base64 em vez de URL
-        };
-
-        const resposta = await fetch(`${API_BASE_URL}/post`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(novoPost)
-        });
-
-        if (resposta.status === 201) {
-            alert('Post publicado com sucesso!');
-            modalOverlay.style.display = 'none';
-            carregarPosts(); 
-        } else {
-            alert('Aviso: Como o back-end pode estar desligado, vamos fingir que salvou e atualizar a página.');
-            location.reload(); 
-        }
-    } catch (e) {
-        console.error(e);
-        alert("Erro ao processar a imagem ou conectar ao servidor. Atualize a página para limpar o formulário.");
-        location.reload();
+  if (imagemSelecionada) {
+    if (imagemSelecionada.startsWith('data:')) {
+      imagemFinal = imagemSelecionada;
+    } else {
+      try {
+        imagemFinal = await urlParaBase64(imagemSelecionada);
+      } catch (e) {
+        console.warn("CORS ou erro na conversão. Usando URL original.");
+        imagemFinal = imagemSelecionada; 
+      }
     }
+  }
+
+  const novoPost = {
+	idprestador: (() => {
+	    const token = localStorage.getItem("token");
+	    if (!token) return 0;
+	    const decoded = decodeJWT(token);
+	    return decoded ? parseInt(decoded.sub) : 0;
+	})(),
+    titulo: titulo || (tagClient ? `Atendimento para @${tagClient}` : 'Novo Serviço'),
+    legenda: desc,
+    foto: imagemFinal 
+  };
+  
+  
+
+  // DEBUG: Veja se o campo 'foto' está preenchido aqui no console
+  console.log("Objeto enviado para o Back-end:", novoPost);
+
+  try {
+    const resposta = await fetch(`${API_BASE_URL}/post`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(novoPost)
+    });
+
+    // Se o back-end retornar erro de "Payload Too Large" (413), 
+    // você saberá que é o limite do Express (Dica #1)
+    if (resposta.status === 413) {
+      alert("Erro: A imagem é muito grande para o servidor!");
+      return;
+    }
+
+    if (resposta.status === 201 || resposta.ok) {
+      alert('Publicado com sucesso!');
+      fecharModal();
+      carregarPosts();
+    } else {
+      const errorData = await resposta.json();
+      console.error("Erro retornado pelo Back-end:", errorData);
+      throw new Error();
+    }
+  } catch (e) {
+    console.warn("Back-end offline ou erro de conexão. Salvando no Mock.");
+    mockJSON.posts.unshift(novoPost);
+    fecharModal();
+    carregarPosts();
+  }
 });
 
-// 3. Criada a função de mock para os reviews para o script não quebrar
-function carregarReviewsMock() {
-    const reviewsBody = document.getElementById('reviews-body');
-    if(reviewsBody) {
-        reviewsBody.innerHTML = '<p style="font-size:0.9rem; color:#666;">Ainda não há avaliações cadastradas.</p>';
-    }
+// ==========================================
+// INICIALIZAÇÃO E EVENTOS DE UI
+// ==========================================
+function fecharModal() { document.getElementById('post-modal-overlay').style.display = 'none'; }
+function abrirModal() {
+  limparUpload(); limparURL(); switchTab('upload');
+  document.getElementById('pm-titulo').value = '';
+  document.getElementById('pm-desc').value = '';
+  document.getElementById('post-modal-overlay').style.display = 'flex';
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderStars(4.25);
+  carregarPosts();
+  
+  document.getElementById('open-post-modal-btn').addEventListener('click', abrirModal);
+  document.getElementById('close-post-modal').addEventListener('click', fecharModal);
+  document.getElementById('pm-cancel-btn').addEventListener('click', fecharModal);
+  document.getElementById('pm-file-input').addEventListener('change', (e) => processarArquivo(e.target.files[0]));
+  
+  let urlDebounce;
+  document.getElementById('pm-img-url').addEventListener('input', (e) => {
+    clearTimeout(urlDebounce);
+    const url = e.target.value.trim();
+    if (url) urlDebounce = setTimeout(() => mostrarPreviewURL(url), 600);
+  });
+});

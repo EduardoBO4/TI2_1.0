@@ -70,25 +70,6 @@ public class JwtUtil {
         return getUserIdFromToken(token);
     }
     
-    //PEGA O ID DO USUARIO VERDE DE UM TOKEN EXTERNO
-    public static Integer getIdUsuarioVerdeFromToken(String token) {
-        try {
-            // DECODIFICA O TOKEN
-            DecodedJWT decodedJWT = JWT.decode(token);
-            
-            if (decodedJWT.getClaim("userId") != null && !decodedJWT.getClaim("userId").isNull()) {
-                return decodedJWT.getClaim("userId").asInt();
-            }
-            
-            System.err.println("Não foi possível extrair userId do token Verde");
-            return null;
-            
-        } catch (Exception e) {
-            System.err.println("Erro ao decodificar token Verde: " + e.getMessage());
-            return null;
-        }
-    }
-    
     //VERIFICA SE O TOKEN JA EXPIROU
     public static boolean isTokenExpired(String token) {
         DecodedJWT decodedJWT = validarToken(token);
