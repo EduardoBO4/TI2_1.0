@@ -1,5 +1,6 @@
 package app;
 
+import service.ConversaService;
 import service.UsuarioService;
 import static spark.Spark.before;
 import static spark.Spark.delete;
@@ -13,7 +14,7 @@ import static spark.Spark.staticFiles;
 public class Aplicacao {
 	
 	private static UsuarioService usuarioService = new UsuarioService();
-	
+	private static ConversaService conversaService = new ConversaService();
 	public static void main(String[] args) {
 		port(8080);
 		staticFiles.location("/public"); 
@@ -33,5 +34,10 @@ public class Aplicacao {
 		get("/usuario/:id", (resquest, response) -> usuarioService.buscarPorId(resquest, response));
 		put("/usuario/:id", (resquest, response) -> usuarioService.atualizar(resquest, response));
 		delete("/usuario/:id",(resquest, response) -> usuarioService.deletar(resquest, response));
+
+		post("/conversa", (request, response) -> conversaService.inserir(request, response));
+        get("/conversas", (request, response) -> conversaService.listar(request, response));
+        put("/conversa/:id", (request, response) -> conversaService.atualizar(request, response));
+        delete("/conversa/:id", (request, response) -> conversaService.deletar(request, response));
 	}	
 }
