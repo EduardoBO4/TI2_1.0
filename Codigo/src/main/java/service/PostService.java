@@ -10,6 +10,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import spark.Request;
 import spark.Response;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class PostService {
@@ -69,6 +71,26 @@ public class PostService {
         try {
             List<Post> lista = postDAO.listarTodos();
             return mapper.writeValueAsString(lista);
+        } catch (JsonProcessingException e) {
+            return erro("Erro ao serializar resposta", 500, response);
+        }
+    }
+    
+    public Object listarPostsPorPrestador(Request request, Response response) {
+        response.type("application/json");
+        
+        try {
+            // Pega o ID que virá na URL (ex: /posts/prestador/5)
+            int idPrestador = Integer.parseInt(request.params(":id"));
+            
+            // Chama o DAO filtrando pelo ID
+            List<Post> lista = postDAO.listarPorPrestador(idPrestador);
+            
+            // Retorna a lista como JSON
+            return mapper.writeValueAsString(lista);
+            
+        } catch (NumberFormatException e) {
+            return erro("ID do prestador inválido", 400, response);
         } catch (JsonProcessingException e) {
             return erro("Erro ao serializar resposta", 500, response);
         }

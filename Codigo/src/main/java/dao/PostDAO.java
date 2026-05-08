@@ -58,6 +58,33 @@ public class PostDAO extends DAO {
         return lista;
     }
     
+    public List<Post> listarPorPrestador(int idprestador) {
+        List<Post> lista = new ArrayList<>();
+        // Adicionamos o WHERE para filtrar
+        String sql = "SELECT * FROM posts WHERE idprestador = ? ORDER BY dataenvio DESC";
+
+        try {
+            PreparedStatement st = conexao.prepareStatement(sql);
+            st.setInt(1, idprestador);
+            ResultSet rs = st.executeQuery();
+
+            while (rs.next()) {
+                Post p = new Post();
+                p.setIdpost(rs.getInt("idpost"));
+                p.setIdprestador(rs.getInt("idprestador"));
+                p.setTitulo(rs.getString("titulo"));
+                p.setLegenda(rs.getString("legenda"));
+                p.setFoto(rs.getString("foto"));
+                p.setDataenvio(rs.getTimestamp("dataenvio"));
+                lista.add(p);
+            }
+            st.close();
+        } catch (SQLException e) {
+            System.err.println("Erro ao listar posts do prestador: " + e.getMessage());
+        }
+        return lista;
+    }
+    
     public boolean deletar(int idpost) {
         String sql = "DELETE FROM posts WHERE idpost = ?";
         try {

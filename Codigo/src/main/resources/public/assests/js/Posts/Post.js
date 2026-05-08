@@ -1,18 +1,3 @@
-const mockJSON = {
-  posts: [
-    {
-      foto: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&q=80",
-      titulo: "Troca de Fiação",
-      legenda: "Serviço completo de troca de fiação em residência antiga."
-    },
-    {
-      foto: "https://images.unsplash.com/photo-1581092921461-eab62e97a780?w=800&q=80",
-      titulo: "Instalação de Painel",
-      legenda: "Quadro de distribuição montado e organizado."
-    }
-  ]
-};
-
 let imagemSelecionada = null; 
 let tabAtiva = 'upload';
 
@@ -36,26 +21,15 @@ function processarArquivo(file) {
   const reader = new FileReader();
   
   reader.onload = (e) => {
-    // Pegamos o resultado original (com data:image/...)
+    // CORREÇÃO 1: Mantemos o Base64 original com o prefixo "data:image/..."
     let fullBase64 = e.target.result;
     
-    // Aplicamos a limpeza que você enviou:
-    // 1. Remove "data:"
-    // 2. Remove tudo até a primeira vírgula (o cabeçalho do tipo de arquivo)
-    let base64Limpo = fullBase64.replace("data:", "").replace(/^.+,/, "");
+    imagemSelecionada = fullBase64;
     
-    // imagemSelecionada agora terá apenas a string pura
-    imagemSelecionada = base64Limpo;
-    
-    // Para o PREVIEW funcionar no navegador, precisamos do Base64 COMPLETO.
-    // Então passamos o 'fullBase64' para o src da imagem.
     document.getElementById('pm-preview-img').src = fullBase64;
     document.getElementById('pm-preview-wrap').style.display = 'block';
     document.getElementById('pm-drop-area').style.display = 'none';
-    
-    console.log("Base64 Limpo:", imagemSelecionada);
   };
-  
   reader.readAsDataURL(file);
 }
 
@@ -86,18 +60,6 @@ function limparURL() {
   document.getElementById('pm-preview-wrap-url').style.display = 'none';
 }
 
-function processarArquivo(file) {
-  if (!file || !file.type.startsWith('image/')) return;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    imagemSelecionada = e.target.result;
-    document.getElementById('pm-preview-img').src = imagemSelecionada;
-    document.getElementById('pm-preview-wrap').style.display = 'block';
-    document.getElementById('pm-drop-area').style.display = 'none';
-  };
-  reader.readAsDataURL(file);
-}
-
 function mostrarPreviewURL(url) {
   imagemSelecionada = url;
   const img = document.getElementById('pm-preview-img-url');
@@ -113,34 +75,57 @@ function mostrarPreviewURL(url) {
 // ==========================================
 // CARREGAR E PUBLICAR (CAMPO 'FOTO')
 // ==========================================
-async function carregarPosts() {
+async function carregarPostsPorPrestador() {
   const postsList = document.getElementById('portfolio-posts-list');
   const galleryGrid = document.getElementById('portfolio-grid');
   
-  let posts = [];
-  try {
-    const resposta = await fetch(`${API_BASE_URL}/posts`);
-    posts = resposta.ok ? await resposta.json() : mockJSON.posts;
-  } catch (e) {
-    posts = mockJSON.posts;
+  const urlParams = new URLSearchParams(window.location.search);
+  let idPrestador = urlParams.get('id');
+
+  if (!idPrestador) {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decoded = decodeJWT(token);
+      idPrestador = decoded.sub;
+    }
   }
 
-  postsList.innerHTML = '';
-  galleryGrid.innerHTML = '';
+  if (!idPrestador) return; 
+
+  let posts = [];
+  try {
+    const resposta = await fetch(`${API_BASE_URL}/posts/prestador/${idPrestador}`);
+    if (resposta.ok) {
+        posts = await resposta.json();
+    }
+  } catch (e) {
+    console.error("Erro ao carregar posts:", e);
+  }
+
+  if(postsList) postsList.innerHTML = '';
+  if(galleryGrid) galleryGrid.innerHTML = '';
 
   posts.forEach(post => {
-    // Usando .foto conforme seu banco de dados
-    const imgHtml = post.foto ? `<img src="${post.foto}" class="post-img">` : '';
-    postsList.innerHTML += `
-      <div class="post-item">
-        ${imgHtml}
-        <div class="post-content">
-          <h4>${post.titulo || 'Serviço'}</h4>
-          <p>${post.legenda || ''}</p>
-        </div>
-      </div>`;
-    if (post.foto) {
-      galleryGrid.innerHTML += `<img src="${post.foto}" class="gallery-img">`;
+    // CORREÇÃO 2: Trava de segurança para posts antigos
+    let imgSrc = post.foto;
+    if (imgSrc && !imgSrc.startsWith('http') && !imgSrc.startsWith('data:')) {
+        imgSrc = 'data:image/jpeg;base64,' + imgSrc;
+    }
+
+    const imgHtml = imgSrc ? `<img src="${imgSrc}" class="post-img">` : '';
+    
+    if(postsList) {
+        postsList.innerHTML += `
+        <div class="post-item">
+            ${imgHtml}
+            <div class="post-content">
+            <h4>${post.titulo || 'Serviço'}</h4>
+            <p>${post.legenda || ''}</p>
+            </div>
+        </div>`;
+    }
+    if (galleryGrid && imgSrc) {
+      galleryGrid.innerHTML += `<img src="${imgSrc}" class="gallery-img">`;
     }
   });
 }
@@ -148,51 +133,31 @@ async function carregarPosts() {
 document.getElementById('pm-publish-btn').addEventListener('click', async () => {
   const titulo = document.getElementById('pm-titulo').value.trim();
   const desc = document.getElementById('pm-desc').value.trim();
-  const tagClient = document.getElementById('pm-client-tag').value.trim();
 
   if (!desc) return alert('A descrição é obrigatória!');
 
-  let imagemFinal = "";
+  // imagemSelecionada já tem o formato completo (Base64 longo ou URL HTTP)
+  let imagemFinal = imagemSelecionada ? imagemSelecionada : "";
 
-  if (imagemSelecionada) {
-    if (imagemSelecionada.startsWith('data:')) {
-      imagemFinal = imagemSelecionada;
-    } else {
-      try {
-        imagemFinal = await urlParaBase64(imagemSelecionada);
-      } catch (e) {
-        console.warn("CORS ou erro na conversão. Usando URL original.");
-        imagemFinal = imagemSelecionada; 
-      }
-    }
-  }
+  const token = localStorage.getItem("token");
+  const decoded = token ? decodeJWT(token) : null;
+  const meuId = decoded ? parseInt(decoded.sub) : 0;
 
   const novoPost = {
-	idprestador: (() => {
-	    const token = localStorage.getItem("token");
-	    if (!token) return 0;
-	    const decoded = decodeJWT(token);
-	    return decoded ? parseInt(decoded.sub) : 0;
-	})(),
-    titulo: titulo || (tagClient ? `Atendimento para @${tagClient}` : 'Novo Serviço'),
+    idprestador: meuId,
+    titulo: titulo,
     legenda: desc,
     foto: imagemFinal 
   };
-  
-  
-
-  // DEBUG: Veja se o campo 'foto' está preenchido aqui no console
-  console.log("Objeto enviado para o Back-end:", novoPost);
 
   try {
-    const resposta = await fetch(`${API_BASE_URL}/post`, {
+    const resposta = await fetchAutenticado(`${API_BASE_URL}/post`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(novoPost)
     });
 
-    // Se o back-end retornar erro de "Payload Too Large" (413), 
-    // você saberá que é o limite do Express (Dica #1)
+    if (!resposta) return; 
+
     if (resposta.status === 413) {
       alert("Erro: A imagem é muito grande para o servidor!");
       return;
@@ -201,17 +166,14 @@ document.getElementById('pm-publish-btn').addEventListener('click', async () => 
     if (resposta.status === 201 || resposta.ok) {
       alert('Publicado com sucesso!');
       fecharModal();
-      carregarPosts();
+      carregarPostsPorPrestador(); 
     } else {
       const errorData = await resposta.json();
-      console.error("Erro retornado pelo Back-end:", errorData);
-      throw new Error();
+      alert("Erro ao publicar: " + errorData.mensagem);
     }
   } catch (e) {
-    console.warn("Back-end offline ou erro de conexão. Salvando no Mock.");
-    mockJSON.posts.unshift(novoPost);
-    fecharModal();
-    carregarPosts();
+      console.error("Erro fatal ao criar post:", e);
+      alert("Erro de conexão com o servidor.");
   }
 });
 
@@ -228,17 +190,24 @@ function abrirModal() {
 
 document.addEventListener('DOMContentLoaded', () => {
   renderStars(4.25);
-  carregarPosts();
+  carregarPostsPorPrestador();
   
-  document.getElementById('open-post-modal-btn').addEventListener('click', abrirModal);
+  const openModalBtn = document.getElementById('open-post-modal-btn');
+  if (openModalBtn) openModalBtn.addEventListener('click', abrirModal);
+  
   document.getElementById('close-post-modal').addEventListener('click', fecharModal);
   document.getElementById('pm-cancel-btn').addEventListener('click', fecharModal);
-  document.getElementById('pm-file-input').addEventListener('change', (e) => processarArquivo(e.target.files[0]));
+  
+  const fileInput = document.getElementById('pm-file-input');
+  if (fileInput) fileInput.addEventListener('change', (e) => processarArquivo(e.target.files[0]));
   
   let urlDebounce;
-  document.getElementById('pm-img-url').addEventListener('input', (e) => {
-    clearTimeout(urlDebounce);
-    const url = e.target.value.trim();
-    if (url) urlDebounce = setTimeout(() => mostrarPreviewURL(url), 600);
-  });
+  const urlInput = document.getElementById('pm-img-url');
+  if (urlInput) {
+      urlInput.addEventListener('input', (e) => {
+        clearTimeout(urlDebounce);
+        const url = e.target.value.trim();
+        if (url) urlDebounce = setTimeout(() => mostrarPreviewURL(url), 600);
+      });
+  }
 });

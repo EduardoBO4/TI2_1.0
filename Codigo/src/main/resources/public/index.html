@@ -20,12 +20,7 @@
   <input type="checkbox" id="toggle-panel" />
 
   <nav class="navbar">
-    <div class="navbar-logo">
-      <svg viewBox="0 0 44 44" width="44" height="44">
-        <circle cx="22" cy="22" r="20" fill="#1a2f6e" stroke="#00c853" stroke-width="2.5"/>
-        <path d="M14 22l6 6 10-12" stroke="#00c853" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
+    <img src="/assests/img/icon.png" width="90" height="60" alt="Logo">	 
     <div class="navbar-items">
       <label for="tab-home" class="nav-item nav-home" title="Home">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
@@ -63,20 +58,12 @@
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
         </svg>
       </label>
-      <label for="tab-profile" class="nav-item nav-profile" title="Perfil">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
-        </svg>
-      </label>
-      <a id="nav-portfolio" class="nav-item nav-portfolio" href="portifolio.html" title="Meu Portfólio" style="display:none; text-decoration:none;">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="2" y="7" width="20" height="14" rx="2"/>
-          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
-          <line x1="12" y1="12" x2="12" y2="16"/>
-          <line x1="10" y1="14" x2="14" y2="14"/>
-        </svg>
-      </a>
+	  <a href="modulos/portifolio.html" class="nav-item nav-profile" title="Perfil" style="text-decoration:none;">
+	    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+	      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+	      <circle cx="12" cy="7" r="4"/>
+	    </svg>
+	  </a>
       <button id="nav-auth-btn" class="nav-auth-btn" onclick="handleAuthClick()" title="Entrar"></button>
       <label for="toggle-panel" class="nav-item nav-toggle-panel" title="Mostrar/Ocultar Painéis">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">

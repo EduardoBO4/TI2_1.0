@@ -23,7 +23,6 @@ public class PostDTO {
     public String getLegenda() { return legenda; }
     public void setLegenda(String legenda) { this.legenda = legenda; }
 
-    // <<< ADICIONE ESTES DOIS MÉTODOS >>>
     public String getFoto() { return foto; }
     public void setFoto(String foto) { this.foto = foto; }
 

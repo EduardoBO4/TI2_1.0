@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import spark.Request;
 import spark.Response;
 import java.util.List;
+import org.mindrot.jbcrypt.BCrypt;
 
 public class UsuarioService {
 
@@ -40,10 +41,10 @@ public class UsuarioService {
         if (loginDTO.getEmail() == null || loginDTO.getSenha() == null) {
             return erro("Email e senha são obrigatórios", 400, response);
         }
-
+        
         UsuarioDTO usuario = UsuarioDAO.login(loginDTO);
-
-        if (usuario == null) {
+        
+        if (usuario == null || !BCrypt.checkpw(loginDTO.getSenha(), usuario.getSenha())) {
             return erro("Credenciais inválidas", 401, response);
         }
 
@@ -123,7 +124,16 @@ public class UsuarioService {
             int id = Integer.parseInt(request.params(":id"));
             UsuarioDTO dto = mapper.readValue(request.body(), new TypeReference<UsuarioDTO>() {});
             dto.setId(id);
-
+            
+            if (dto.getSenha() != null && !dto.getSenha().trim().isEmpty()) {
+                String senhaHasheada = BCrypt.hashpw(dto.getSenha(), BCrypt.gensalt());
+                dto.setSenha(senhaHasheada);
+            } else {
+                UsuarioDTO usuarioAntigo = UsuarioDAO.buscarPorId(id);
+                if (usuarioAntigo != null) {
+                    dto.setSenha(usuarioAntigo.getSenha());
+                }
+            }
             boolean sucesso = UsuarioDAO.atualizar(dto);
 
             if (sucesso) {

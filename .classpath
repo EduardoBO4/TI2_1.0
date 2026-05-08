@@ -7,5 +7,6 @@
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="TrabalhoTotal/Codigo/src/main/java/app"/>
+	<classpathentry kind="src" path="Codigo/src/main/java/app"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -6,112 +6,18 @@
   <title>Portifólio — Resolve Aqui</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="../assests/css/portifolio/portifolio.css" />
-
-  <!-- Estilos do modal de imagem — mova para portifolio.css se preferir -->
-  <style>
-    .pm-img-tabs {
-      display: flex;
-      border-bottom: 1px solid #1e3a5f;
-      margin-bottom: 10px;
-    }
-    .pm-img-tab {
-      flex: 1;
-      padding: 7px 0;
-      background: none;
-      border: none;
-      border-bottom: 2px solid transparent;
-      color: #7a9cc8;
-      font-size: .82rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: color .2s, border-color .2s;
-    }
-    .pm-img-tab.active { color: #4da6ff; border-bottom-color: #4da6ff; }
-
-    .pm-drop-area {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      border: 2px dashed #1e3a5f;
-      border-radius: 10px;
-      padding: 28px 16px;
-      cursor: pointer;
-      text-align: center;
-      position: relative;
-      transition: border-color .2s, background .2s;
-    }
-    .pm-drop-area:hover, .pm-drop-area.dragover {
-      border-color: #4da6ff;
-      background: rgba(77,166,255,.05);
-    }
-    .pm-drop-area i { font-size: 2rem; color: #4da6ff; }
-    .pm-drop-area span { font-size: .83rem; color: #7a9cc8; }
-    .pm-drop-area strong { color: #4da6ff; }
-    .pm-file-input {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      cursor: pointer;
-      width: 100%;
-      height: 100%;
-    }
-
-    .pm-preview-wrap { position: relative; display: none; }
-    .pm-preview-wrap img {
-      width: 100%;
-      max-height: 180px;
-      object-fit: cover;
-      border-radius: 8px;
-      display: block;
-    }
-    .pm-preview-remove {
-      position: absolute;
-      top: 6px; right: 6px;
-      background: rgba(0,0,0,.55);
-      border: none; color: #fff;
-      border-radius: 50%;
-      width: 26px; height: 26px;
-      cursor: pointer; font-size: .8rem;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .pm-preview-remove:hover { background: #e74c3c; }
-
-    .pm-url-panel { display: flex; flex-direction: column; gap: 8px; }
-    .pm-url-panel input {
-      width: 100%;
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 1px solid #1e3a5f;
-      background: #0d1b2e;
-      color: #e0eaff;
-      font-size: .85rem;
-      outline: none;
-      transition: border-color .2s;
-    }
-    .pm-url-panel input:focus { border-color: #4da6ff; }
-    .pm-url-hint { font-size: .75rem; color: #7a9cc8; }
-  </style>
 </head>
 <body>
 
 <nav class="navbar">
-  <svg class="nav-logo" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="22" cy="22" r="20" fill="#1b3a6a" stroke="#3a6aaa" stroke-width="2"/>
-    <path d="M13 22 L19 28 L31 16" stroke="#4da6ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="22" cy="22" r="9" stroke="#4da6ff" stroke-width="1.5" fill="none" opacity="0.5"/>
-  </svg>
+	<img src="/assests/img/icon.png" width="90" height="60" alt="Logo">	  
 
   <div class="nav-icons">
-    <button class="nav-icon" onclick="location.href='index.html'" title="Início"><i class="fa-solid fa-house"></i></button>
-    <button class="nav-icon" onclick="void(0)" title="Favoritos"><i class="fa-solid fa-heart"></i></button>
-    <button class="nav-icon" onclick="location.href='mensagens.html'" title="Mensagens"><i class="fa-solid fa-envelope"></i></button>
-    <button class="nav-icon" onclick="void(0)" title="Notificações"><i class="fa-solid fa-rotate"></i></button>
-    <button class="nav-icon" onclick="void(0)" title="Comunidade"><i class="fa-solid fa-user-group"></i></button>
+    <button class="nav-icon" onclick="location.href='/index.html'" title="Início"><i class="fa-solid fa-house"></i></button>
+    <button class="nav-icon" onclick="void(0)" title="/Favoritos"><i class="fa-solid fa-heart"></i></button>
+    <button class="nav-icon" onclick="location.href='/mensagens.html'" title="Mensagens"><i class="fa-solid fa-envelope"></i></button>
+    <button class="nav-icon" onclick="void(0)" title="/Notificações"><i class="fa-solid fa-rotate"></i></button>
+    <button class="nav-icon" onclick="void(0)" title="/Comunidade"><i class="fa-solid fa-user-group"></i></button>
   </div>
 
   <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMenu()" title="Menu">
@@ -150,21 +56,21 @@
         <div class="avatar-circle"><i class="fa-solid fa-user"></i></div>
       </div>
 
-      <div class="profile-info">
-        <p class="plan-label">Plano básico</p>
-        <p class="profile-bio"><strong>Sobre:</strong> Meu nome é Romeu Lima, tenho 3 filhos e trabalho como eletricista desde 1990, tenho formação em engenharia elétrica e adoraria trabalhar para você.</p>
-        <p class="profile-cta">Acompanhe alguns trabalhos meus no portfólio.</p>
-      </div>
-
+	  <div class="profile-info">
+	      <h2 id="profile-name">Carregando...</h2> 
+	      
+	      <p class="plan-label" id="profile-plan">Plano básico</p>
+	      
+	      <p class="profile-bio">
+	          <strong>Sobre:</strong> 
+	          <span id="profile-description">Carregando descrição...</span>
+	      </p>
+	      
+	      <p class="profile-cta">Acompanhe alguns trabalhos meus no portfólio.</p>
+	  </div>
+	  
       <div class="rating-panel">
-        <p class="rating-label">Média de avaliação</p>
-        <div class="rating-row">
-          <span class="rating-value" id="rating-display">4,25</span>
-          <div class="stars" id="stars-display"></div>
-        </div>
-        <button class="contact-btn" onclick="location.href='mensagens.html?user=Romeu+Lima&img=70&prof=Eletricista'">
-          Entre em contato com Romeu Lima
-        </button>
+        
       </div>
     </div>
 
@@ -172,8 +78,8 @@
 
       <div class="panel panel-portfolio">
         <div class="portfolio-panel-header">
-          <p class="panel-title" style="margin:0">Portifólio de trabalho</p>
-          <button class="criar-post-btn" id="open-post-modal-btn">
+          <p class="panel-title" style="margin:0">Portfólio de trabalho</p>
+          <button class="criar-post-btn" id="open-post-modal-btn" style="display: none;">
             <i class="fa-solid fa-plus"></i> Criar Post
           </button>
         </div>
@@ -219,7 +125,6 @@
         </div>
       </div>
 
-<!-- ========== MODAL CRIAR POST ========== -->
 <div class="post-modal-overlay" id="post-modal-overlay">
   <div class="post-modal-card">
     <div class="post-modal-header">
@@ -230,7 +135,6 @@
 
     <div class="post-modal-body">
 
-      <!-- BLOCO DE IMAGEM COM TABS -->
       <div class="pm-form-group">
         <label>Imagem do Trabalho <span class="pm-label-sub">(opcional)</span></label>
 
@@ -243,7 +147,6 @@
           </button>
         </div>
 
-        <!-- Painel Upload -->
         <div id="panel-upload">
           <div class="pm-preview-wrap" id="pm-preview-wrap">
             <img id="pm-preview-img" src="" alt="preview" />
@@ -259,7 +162,6 @@
           </div>
         </div>
 
-        <!-- Painel URL -->
         <div id="panel-url" style="display:none">
           <div class="pm-url-panel">
             <input type="text" id="pm-img-url" placeholder="https://exemplo.com/foto.jpg" />
@@ -274,28 +176,15 @@
         </div>
       </div>
 	
-	  <!-- Troca o bloco do título -->
 	  <div class="pm-form-group">
 	    <label>Título</label>
 	    <textarea id="pm-titulo" placeholder="Coloque o título do Post" rows="2"></textarea>
 	  </div>
 
-	  <!-- Mantém a descrição com id próprio -->
 	  <div class="pm-form-group">
 	    <label>Descrição do trabalho</label>
 	    <textarea id="pm-desc" placeholder="Descreva o serviço realizado..."></textarea>
 	  </div>
-
-      <!-- CLIENTE -->
-      <div class="pm-form-group">
-        <label>Marcar Cliente Atendido <span class="pm-label-sub">(opcional)</span></label>
-        <div class="pm-tag-input-wrap">
-          <span class="pm-at">@</span>
-          <input type="text" id="pm-client-tag" placeholder="Nome do cliente atendido" />
-        </div>
-        <p class="pm-tag-hint">O cliente receberá um lembrete para avaliar o serviço.</p>
-      </div>
-    </div>
 
     <div class="post-modal-footer">
       <button class="pm-btn-cancel" id="pm-cancel-btn">Cancelar</button>
@@ -308,5 +197,6 @@
 
 <script src="/assests/js/auth/auth.js"></script>
 <script src="/assests/js/Posts/Post.js"></script>
+<script src="/assests/js/Perfil/Perfil.js"></script>
 </body>
 </html>
