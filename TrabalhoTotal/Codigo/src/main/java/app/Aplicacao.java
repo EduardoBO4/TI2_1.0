@@ -1,18 +1,14 @@
 package app;
 
 import service.UsuarioService;
-import static spark.Spark.before;
-import static spark.Spark.delete;
-import static spark.Spark.get;
-import static spark.Spark.options;
-import static spark.Spark.port;
-import static spark.Spark.post;
-import static spark.Spark.put;
-import static spark.Spark.staticFiles;
+import service.PostService;
+
+import static spark.Spark.*;
 
 public class Aplicacao {
 	
 	private static UsuarioService usuarioService = new UsuarioService();
+	private static PostService postService = new PostService();
 	
 	public static void main(String[] args) {
 		port(8080);
@@ -33,5 +29,10 @@ public class Aplicacao {
 		get("/usuario/:id", (resquest, response) -> usuarioService.buscarPorId(resquest, response));
 		put("/usuario/:id", (resquest, response) -> usuarioService.atualizar(resquest, response));
 		delete("/usuario/:id",(resquest, response) -> usuarioService.deletar(resquest, response));
-	}	
+		
+		//posts
+		post("/post", (request, response) -> postService.criarPost(request, response));
+        get("/posts", (request, response) -> postService.listarPosts(request, response));
+        delete("/post/:id", (request, response) -> postService.deletarPost(request, response));
+	}
 }

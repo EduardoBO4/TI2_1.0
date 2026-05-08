@@ -6,7 +6,6 @@
   <title>Portifólio — Resolve Aqui</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="../assests/css/portifolio/portifolio.css" />
-  <script src="auth.js"></script>
 </head>
 <body>
 
@@ -47,7 +46,6 @@
 
   <div id="profile-section">
 
-    <!-- PROFILE CARD -->
     <div class="profile-card">
       <div class="profile-left">
         <div class="crown-wrapper crown-basic">
@@ -80,10 +78,8 @@
       </div>
     </div>
 
-    <!-- MAIN GRID -->
     <div class="bottom-grid">
 
-      <!-- PORTFOLIO PANEL -->
       <div class="panel panel-portfolio">
         <div class="portfolio-panel-header">
           <p class="panel-title" style="margin:0">Portifólio de trabalho</p>
@@ -100,7 +96,6 @@
         </div>
       </div>
 
-      <!-- PLANS -->
       <div class="plans-wrapper">
         <p class="plans-label">PLANOS DE DESTAQUE</p>
         <div class="plans-cards">
@@ -135,13 +130,11 @@
         </div>
       </div>
 
-      <!-- REVIEWS PANEL -->
       <div class="panel panel-reviews">
         <p class="panel-title">Avaliações do profissional</p>
         <div class="panel-body" id="reviews-body" style="justify-content:flex-start; align-items:stretch;"></div>
       </div>
 
-      <!-- EVENTS PANEL -->
       <div class="panel panel-events">
         <p class="panel-title">Próximos Eventos</p>
         <div class="panel-body" id="events-body" style="justify-content:flex-start; align-items:stretch; padding:0;">
@@ -179,7 +172,6 @@
   </div>
 </div>
 
-<!-- MODAL: CRIAR POST -->
 <div class="post-modal-overlay" id="post-modal-overlay">
   <div class="post-modal-card">
     <div class="post-modal-header">
@@ -221,238 +213,7 @@
     </div>
   </div>
 </div>
-
-<script>
-  const POSTS_KEY    = 'profeed_portfolio_posts';
-  const REVIEWS_KEY  = 'profeed_pending_reviews';
-  const GIVEN_KEY    = 'profeed_given_reviews';
-
-  /* ----------- helpers ----------- */
-  function loadPosts() {
-    try { return JSON.parse(localStorage.getItem(POSTS_KEY)) || []; } catch(e) { return []; }
-  }
-  function savePosts(arr) { localStorage.setItem(POSTS_KEY, JSON.stringify(arr)); }
-  function loadPendingReviews() {
-    try { return JSON.parse(localStorage.getItem(REVIEWS_KEY)) || []; } catch(e) { return []; }
-  }
-  function savePendingReviews(arr) { localStorage.setItem(REVIEWS_KEY, JSON.stringify(arr)); }
-  function loadGivenReviews() {
-    try { return JSON.parse(localStorage.getItem(GIVEN_KEY)) || []; } catch(e) { return []; }
-  }
-
-  /* ----------- stars ----------- */
-  function renderStars(val, total = 5) {
-    const container = document.getElementById('stars-display');
-    const display   = document.getElementById('rating-display');
-    container.innerHTML = '';
-    for (let i = 1; i <= total; i++) {
-      const s = document.createElement('span');
-      s.className = 'star ' + (i <= Math.floor(val) ? 'filled' : 'empty');
-      s.textContent = i <= Math.floor(val) ? '★' : '☆';
-      container.appendChild(s);
-    }
-    display.textContent = val.toFixed(2).replace('.', ',');
-  }
-
-  function starsHtml(n) {
-    let h = '';
-    for (let i = 1; i <= 5; i++) h += `<span class="pf-star ${i <= n ? 'filled' : ''}">${i <= n ? '★' : '☆'}</span>`;
-    return h;
-  }
-
-  /* ----------- portfolio image slots ----------- */
-  function renderPortfolioSlots(count = 6) {
-    const grid = document.getElementById('portfolio-grid');
-    grid.innerHTML = '';
-    const posts = loadPosts();
-    const imgs  = posts.filter(p => p.img).slice(0, count);
-    for (let i = 0; i < count; i++) {
-      const slot = document.createElement('div');
-      slot.className = 'portfolio-img-slot';
-      if (imgs[i]) {
-        slot.style.backgroundImage = `url('${imgs[i].img}')`;
-        slot.style.backgroundSize  = 'cover';
-        slot.style.backgroundPosition = 'center';
-      }
-      grid.appendChild(slot);
-    }
-  }
-
-  /* ----------- render reviews from givenReviews ----------- */
-  function renderReviews() {
-    const body = document.getElementById('reviews-body');
-    body.innerHTML = '';
-    const given = loadGivenReviews();
-    if (!given.length) {
-      body.innerHTML = '<p style="color:#5a7ab0;font-size:12px;text-align:center;padding:16px 0;">Nenhuma avaliação ainda.</p>';
-      return;
-    }
-    given.forEach(rv => {
-      const card = document.createElement('div');
-      card.className = 'pf-review-card';
-      card.innerHTML = `
-        <div class="pf-review-top">
-          <div class="pf-review-user">
-            ${rv.reviewerImg ? `<img class="pf-review-avatar" src="${rv.reviewerImg}" alt="${rv.reviewerName}">` : `<div class="pf-review-avatar-icon"><i class="fa-solid fa-user"></i></div>`}
-            <div>
-              <span class="pf-review-name">${rv.reviewerName}</span>
-              <span class="pf-review-date">${rv.date}</span>
-            </div>
-          </div>
-          <div class="pf-stars-row">${starsHtml(rv.stars)}</div>
-        </div>
-        <p class="pf-review-text">${rv.text}</p>
-        ${rv.img ? `<img class="pf-review-img" src="${rv.img}" alt="foto da avaliação">` : ''}
-      `;
-      body.appendChild(card);
-    });
-
-    /* recalc average rating */
-    const avg = given.reduce((s, r) => s + r.stars, 0) / given.length;
-    renderStars(avg);
-  }
-
-  /* ----------- render portfolio posts as cards ----------- */
-  function renderPortfolioPosts() {
-    const container = document.getElementById('portfolio-posts-list');
-    container.innerHTML = '';
-    const posts = loadPosts();
-    if (!posts.length) {
-      container.innerHTML = '<p class="pm-empty">Nenhum post publicado ainda. Clique em "Criar Post" para começar.</p>';
-      return;
-    }
-    posts.slice().reverse().forEach(post => {
-      const card = document.createElement('div');
-      card.className = 'pf-post-card';
-      card.innerHTML = `
-        <div class="pf-post-header">
-          <div class="pf-post-avatar-circle"><i class="fa-solid fa-user"></i></div>
-          <div class="pf-post-user-info">
-            <div class="pf-post-name">${post.providerName || 'Você'}</div>
-            <div class="pf-post-date">${post.date}</div>
-          </div>
-        </div>
-        ${post.img ? `<div class="pf-post-img-wrap"><img class="pf-post-img" src="${post.img}" alt="post"></div>` : ''}
-        <div class="pf-post-body">
-          <p class="pf-post-desc">${post.desc}</p>
-          ${post.taggedClient ? `<div class="pf-post-tag"><i class="fa-solid fa-tag"></i> @${post.taggedClient}</div>` : ''}
-        </div>
-        <div class="pf-post-actions">
-          <span class="pf-action"><i class="fa-regular fa-heart"></i> ${post.likes || 0}</span>
-          <span class="pf-action"><i class="fa-regular fa-comment"></i></span>
-        </div>
-      `;
-      container.appendChild(card);
-    });
-  }
-
-  /* ----------- toggle menu ----------- */
-  function toggleMenu() {
-    const menu = document.getElementById('dropdown-menu');
-    const btn  = document.getElementById('hamburger-btn');
-    menu.classList.toggle('active');
-    btn.classList.toggle('active');
-  }
-
-  function toggleProfile() {
-    const section = document.getElementById('profile-section');
-    const noMsg   = document.getElementById('no-profile');
-    const btn     = document.getElementById('profile-toggle-btn');
-    const isOpen  = section.classList.contains('visible');
-    section.classList.toggle('visible', !isOpen);
-    noMsg.style.display = isOpen ? 'block' : 'none';
-    btn.classList.toggle('active', !isOpen);
-  }
-
-  /* ----------- post modal ----------- */
-  const postModalOverlay = document.getElementById('post-modal-overlay');
-
-  document.getElementById('open-post-modal-btn').addEventListener('click', () => {
-    postModalOverlay.classList.add('active');
-  });
-  document.getElementById('close-post-modal').addEventListener('click', closePostModal);
-  document.getElementById('pm-cancel-btn').addEventListener('click', closePostModal);
-  postModalOverlay.addEventListener('click', e => { if (e.target === postModalOverlay) closePostModal(); });
-
-  function closePostModal() {
-    postModalOverlay.classList.remove('active');
-    document.getElementById('pm-img-url').value = '';
-    document.getElementById('pm-desc').value = '';
-    document.getElementById('pm-client-tag').value = '';
-    document.getElementById('pm-preview-img').style.display = 'none';
-    document.getElementById('pm-img-placeholder').style.display = 'flex';
-  }
-
-  /* live image preview */
-  document.getElementById('pm-img-url').addEventListener('input', function() {
-    const url = this.value.trim();
-    const preview = document.getElementById('pm-preview-img');
-    const placeholder = document.getElementById('pm-img-placeholder');
-    if (url) {
-      preview.src = url;
-      preview.style.display = 'block';
-      placeholder.style.display = 'none';
-    } else {
-      preview.style.display = 'none';
-      placeholder.style.display = 'flex';
-    }
-  });
-
-  document.getElementById('pm-publish-btn').addEventListener('click', () => {
-    const img         = document.getElementById('pm-img-url').value.trim();
-    const desc        = document.getElementById('pm-desc').value.trim();
-    const taggedClient = document.getElementById('pm-client-tag').value.trim();
-
-    if (!desc) { alert('Adicione uma descrição ao post.'); return; }
-
-    const user = typeof getUser === 'function' ? getUser() : null;
-    const providerName = user ? (user.nome || user.username) : 'Romeu Lima';
-
-    const now = new Date();
-    const dateStr = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
-
-    const newPost = {
-      id: Date.now(),
-      providerName,
-      img,
-      desc,
-      taggedClient,
-      date: dateStr,
-      likes: 0
-    };
-
-    const posts = loadPosts();
-    posts.push(newPost);
-    savePosts(posts);
-
-    /* if client tagged, create pending review */
-    if (taggedClient) {
-      const pending = loadPendingReviews();
-      pending.push({
-        id: Date.now() + 1,
-        postId: newPost.id,
-        providerName,
-        postDesc: desc,
-        postImg: img,
-        taggedClient,
-        date: dateStr,
-        reviewed: false
-      });
-      savePendingReviews(pending);
-    }
-
-    renderPortfolioPosts();
-    renderPortfolioSlots();
-    closePostModal();
-  });
-
-  /* ----------- init ----------- */
-  renderStars(4.25);
-  renderPortfolioSlots(6);
-  renderPortfolioPosts();
-  renderReviews();
-  toggleProfile();
-</script>
-
+<script src="/assets/js/auth.js"></script>
+<script src="/assets/js/portifolio.js"></script>
 </body>
 </html>
