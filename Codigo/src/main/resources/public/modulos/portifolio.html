@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portifólio — Resolve Aqui</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="../assests/css/portifolio/portifolio.css" />
+
+  <!-- Estilos do modal de imagem — mova para portifolio.css se preferir -->
+  <style>
+    .pm-img-tabs {
+      display: flex;
+      border-bottom: 1px solid #1e3a5f;
+      margin-bottom: 10px;
+    }
+    .pm-img-tab {
+      flex: 1;
+      padding: 7px 0;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: #7a9cc8;
+      font-size: .82rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: color .2s, border-color .2s;
+    }
+    .pm-img-tab.active { color: #4da6ff; border-bottom-color: #4da6ff; }
+
+    .pm-drop-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 2px dashed #1e3a5f;
+      border-radius: 10px;
+      padding: 28px 16px;
+      cursor: pointer;
+      text-align: center;
+      position: relative;
+      transition: border-color .2s, background .2s;
+    }
+    .pm-drop-area:hover, .pm-drop-area.dragover {
+      border-color: #4da6ff;
+      background: rgba(77,166,255,.05);
+    }
+    .pm-drop-area i { font-size: 2rem; color: #4da6ff; }
+    .pm-drop-area span { font-size: .83rem; color: #7a9cc8; }
+    .pm-drop-area strong { color: #4da6ff; }
+    .pm-file-input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .pm-preview-wrap { position: relative; display: none; }
+    .pm-preview-wrap img {
+      width: 100%;
+      max-height: 180px;
+      object-fit: cover;
+      border-radius: 8px;
+      display: block;
+    }
+    .pm-preview-remove {
+      position: absolute;
+      top: 6px; right: 6px;
+      background: rgba(0,0,0,.55);
+      border: none; color: #fff;
+      border-radius: 50%;
+      width: 26px; height: 26px;
+      cursor: pointer; font-size: .8rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .pm-preview-remove:hover { background: #e74c3c; }
+
+    .pm-url-panel { display: flex; flex-direction: column; gap: 8px; }
+    .pm-url-panel input {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #1e3a5f;
+      background: #0d1b2e;
+      color: #e0eaff;
+      font-size: .85rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .pm-url-panel input:focus { border-color: #4da6ff; }
+    .pm-url-hint { font-size: .75rem; color: #7a9cc8; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <svg class="nav-logo" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="22" cy="22" r="20" fill="#1b3a6a" stroke="#3a6aaa" stroke-width="2"/>
+    <path d="M13 22 L19 28 L31 16" stroke="#4da6ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="22" cy="22" r="9" stroke="#4da6ff" stroke-width="1.5" fill="none" opacity="0.5"/>
+  </svg>
+
+  <div class="nav-icons">
+    <button class="nav-icon" onclick="location.href='index.html'" title="Início"><i class="fa-solid fa-house"></i></button>
+    <button class="nav-icon" onclick="void(0)" title="Favoritos"><i class="fa-solid fa-heart"></i></button>
+    <button class="nav-icon" onclick="location.href='mensagens.html'" title="Mensagens"><i class="fa-solid fa-envelope"></i></button>
+    <button class="nav-icon" onclick="void(0)" title="Notificações"><i class="fa-solid fa-rotate"></i></button>
+    <button class="nav-icon" onclick="void(0)" title="Comunidade"><i class="fa-solid fa-user-group"></i></button>
+  </div>
+
+  <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMenu()" title="Menu">
+    <span></span><span></span><span></span>
+  </button>
+
+  <div class="dropdown-menu" id="dropdown-menu">
+    <button class="nav-icon dropdown-item" onclick="location.href='index.html'"><i class="fa-solid fa-house"></i> Início</button>
+    <button class="nav-icon dropdown-item" onclick="void(0)"><i class="fa-solid fa-heart"></i> Favoritos</button>
+    <button class="nav-icon dropdown-item" onclick="location.href='mensagens.html'"><i class="fa-solid fa-envelope"></i> Mensagens</button>
+    <button class="nav-icon dropdown-item" onclick="void(0)"><i class="fa-solid fa-rotate"></i> Notificações</button>
+    <button class="nav-icon dropdown-item" onclick="void(0)"><i class="fa-solid fa-user-group"></i> Comunidade</button>
+  </div>
+
+  <button class="nav-profile-btn" id="profile-toggle-btn" onclick="toggleProfile()" title="Perfil">
+    <i class="fa-solid fa-user"></i>
+  </button>
+</nav>
+
+<div class="page">
+  <p class="no-profile-msg" id="no-profile">Clique no ícone de perfil para ver as informações do profissional.</p>
+
+  <div id="profile-section">
+
+    <div class="profile-card">
+      <div class="profile-left">
+        <div class="crown-wrapper crown-basic">
+          <svg viewBox="0 0 60 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="5,35 15,10 30,22 45,10 55,35" fill="none" stroke="#2d3748" stroke-width="3" stroke-linejoin="round"/>
+            <line x1="5" y1="35" x2="55" y2="35" stroke="#2d3748" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="5" cy="35" r="4" fill="#2d3748"/>
+            <circle cx="30" cy="35" r="4" fill="#2d3748"/>
+            <circle cx="55" cy="35" r="4" fill="#2d3748"/>
+          </svg>
+        </div>
+        <div class="avatar-circle"><i class="fa-solid fa-user"></i></div>
+      </div>
+
+      <div class="profile-info">
+        <p class="plan-label">Plano básico</p>
+        <p class="profile-bio"><strong>Sobre:</strong> Meu nome é Romeu Lima, tenho 3 filhos e trabalho como eletricista desde 1990, tenho formação em engenharia elétrica e adoraria trabalhar para você.</p>
+        <p class="profile-cta">Acompanhe alguns trabalhos meus no portfólio.</p>
+      </div>
+
+      <div class="rating-panel">
+        <p class="rating-label">Média de avaliação</p>
+        <div class="rating-row">
+          <span class="rating-value" id="rating-display">4,25</span>
+          <div class="stars" id="stars-display"></div>
+        </div>
+        <button class="contact-btn" onclick="location.href='mensagens.html?user=Romeu+Lima&img=70&prof=Eletricista'">
+          Entre em contato com Romeu Lima
+        </button>
+      </div>
+    </div>
+
+    <div class="bottom-grid">
+
+      <div class="panel panel-portfolio">
+        <div class="portfolio-panel-header">
+          <p class="panel-title" style="margin:0">Portifólio de trabalho</p>
+          <button class="criar-post-btn" id="open-post-modal-btn">
+            <i class="fa-solid fa-plus"></i> Criar Post
+          </button>
+        </div>
+        <div class="panel-body">
+          <div class="portfolio-posts-list" id="portfolio-posts-list"></div>
+          <div class="portfolio-grid-label">Galeria Rápida</div>
+          <div class="portfolio-grid" id="portfolio-grid"></div>
+          <button class="ver-mais-btn"><i class="fa-solid fa-circle-plus"></i> Ver mais</button>
+        </div>
+      </div>
+
+      <div class="plans-wrapper">
+        <p class="plans-label">PLANOS DE DESTAQUE</p>
+        <div class="plans-cards">
+          <div class="plan-card silver">
+            <div class="plan-crown crown-silver">
+              <svg viewBox="0 0 52 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="4,30 14,8 26,18 38,8 48,30" fill="none" stroke="#5a6a80" stroke-width="2.5" stroke-linejoin="round"/>
+                <line x1="4" y1="30" x2="48" y2="30" stroke="#5a6a80" stroke-width="2.5" stroke-linecap="round"/>
+                <circle cx="4" cy="30" r="3" fill="#8090a8"/>
+                <circle cx="26" cy="30" r="3" fill="#8090a8"/>
+                <circle cx="48" cy="30" r="3" fill="#8090a8"/>
+              </svg>
+            </div>
+            <p class="plan-name">PLUS</p>
+            <p class="plan-desc">Destaque para profissionais com mais visibilidade na plataforma.</p>
+            <button class="plan-btn" onclick="event.stopPropagation()">Subscribe</button>
+          </div>
+          <div class="plan-card gold">
+            <div class="plan-crown crown-gold">
+              <svg viewBox="0 0 52 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="4,30 14,8 26,18 38,8 48,30" fill="none" stroke="#8a5c00" stroke-width="2.5" stroke-linejoin="round"/>
+                <line x1="4" y1="30" x2="48" y2="30" stroke="#8a5c00" stroke-width="2.5" stroke-linecap="round"/>
+                <circle cx="4" cy="30" r="3" fill="#c87c00"/>
+                <circle cx="26" cy="30" r="3" fill="#c87c00"/>
+                <circle cx="48" cy="30" r="3" fill="#c87c00"/>
+              </svg>
+            </div>
+            <p class="plan-name">PREMIUM</p>
+            <p class="plan-desc">O melhor plano para profissionais que querem se destacar ao máximo.</p>
+            <button class="plan-btn" onclick="event.stopPropagation()">Subscription</button>
+          </div>
+        </div>
+      </div>
+
+<!-- ========== MODAL CRIAR POST ========== -->
+<div class="post-modal-overlay" id="post-modal-overlay">
+  <div class="post-modal-card">
+    <div class="post-modal-header">
+      <span class="post-modal-title"><i class="fa-solid fa-pen-to-square"></i> Novo Post do Portfólio</span>
+      <button class="post-modal-close" id="close-post-modal"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+	
+
+    <div class="post-modal-body">
+
+      <!-- BLOCO DE IMAGEM COM TABS -->
+      <div class="pm-form-group">
+        <label>Imagem do Trabalho <span class="pm-label-sub">(opcional)</span></label>
+
+        <div class="pm-img-tabs">
+          <button class="pm-img-tab active" id="tab-upload" onclick="switchTab('upload')">
+            <i class="fa-solid fa-upload"></i> Do dispositivo
+          </button>
+          <button class="pm-img-tab" id="tab-url" onclick="switchTab('url')">
+            <i class="fa-solid fa-link"></i> Por URL
+          </button>
+        </div>
+
+        <!-- Painel Upload -->
+        <div id="panel-upload">
+          <div class="pm-preview-wrap" id="pm-preview-wrap">
+            <img id="pm-preview-img" src="" alt="preview" />
+            <button class="pm-preview-remove" id="pm-remove-img" title="Remover">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <div class="pm-drop-area" id="pm-drop-area">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <span>Arraste uma foto ou <strong>clique para selecionar</strong></span>
+            <span style="font-size:.72rem">JPG, PNG, WEBP · máx. 10 MB</span>
+            <input type="file" id="pm-file-input" class="pm-file-input" accept="image/*" />
+          </div>
+        </div>
+
+        <!-- Painel URL -->
+        <div id="panel-url" style="display:none">
+          <div class="pm-url-panel">
+            <input type="text" id="pm-img-url" placeholder="https://exemplo.com/foto.jpg" />
+            <p class="pm-url-hint">Cole o link direto de uma imagem pública.</p>
+            <div class="pm-preview-wrap" id="pm-preview-wrap-url">
+              <img id="pm-preview-img-url" src="" alt="preview url" />
+              <button class="pm-preview-remove" id="pm-remove-url" title="Limpar">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+	
+	  <!-- Troca o bloco do título -->
+	  <div class="pm-form-group">
+	    <label>Título</label>
+	    <textarea id="pm-titulo" placeholder="Coloque o título do Post" rows="2"></textarea>
+	  </div>
+
+	  <!-- Mantém a descrição com id próprio -->
+	  <div class="pm-form-group">
+	    <label>Descrição do trabalho</label>
+	    <textarea id="pm-desc" placeholder="Descreva o serviço realizado..."></textarea>
+	  </div>
+
+      <!-- CLIENTE -->
+      <div class="pm-form-group">
+        <label>Marcar Cliente Atendido <span class="pm-label-sub">(opcional)</span></label>
+        <div class="pm-tag-input-wrap">
+          <span class="pm-at">@</span>
+          <input type="text" id="pm-client-tag" placeholder="Nome do cliente atendido" />
+        </div>
+        <p class="pm-tag-hint">O cliente receberá um lembrete para avaliar o serviço.</p>
+      </div>
+    </div>
+
+    <div class="post-modal-footer">
+      <button class="pm-btn-cancel" id="pm-cancel-btn">Cancelar</button>
+      <button class="pm-btn-publish" id="pm-publish-btn">
+        <i class="fa-solid fa-paper-plane"></i> Publicar
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="/assests/js/auth/auth.js"></script>
+<script src="/assests/js/Posts/Post.js"></script>
+</body>
+</html>
